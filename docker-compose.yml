@@ -1,0 +1,6 @@
+﻿services:
+  lta.webapi:
+    image: lta.webapi
+    build:
+      context: .
+      dockerfile: src/LTA.WebAPI/Dockerfile
