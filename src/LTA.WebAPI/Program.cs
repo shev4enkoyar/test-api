@@ -1,5 +1,6 @@
 using LTA.Application;
 using LTA.Infrastructure;
+using LTA.Infrastructure.Data;
 using LTA.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Polly;
@@ -31,12 +32,10 @@ builder.Services.AddHttpClient(JsonPlaceholderApiClient.ClientName,
 
 var app = builder.Build();
 
+await app.InitialiseDatabaseAsync();
+
 app.UseSwagger();
 app.UseSwaggerUI();
-// if (app.Environment.IsDevelopment())
-// {
-//     
-// }
 
 app.UseHttpsRedirection();
 

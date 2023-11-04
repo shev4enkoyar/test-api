@@ -28,7 +28,8 @@ public static class DependencyInjection
         });
 
         services.AddTransient<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-        //AddDbContextPool(services);
+
+        services.AddScoped<ApplicationDbContextInitializer>();
 
         return services;
     }
