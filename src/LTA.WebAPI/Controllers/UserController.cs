@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LTA.WebAPI.Controllers;
 
 [Route("/api/users")]
-[ResponseCache(CacheProfileName = "Default5")]
+[ResponseCache(CacheProfileName = "Default")]
 public class UserController : ApiControllerBase
 {
     [HttpGet]

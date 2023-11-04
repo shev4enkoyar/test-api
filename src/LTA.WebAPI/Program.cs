@@ -1,4 +1,5 @@
 using LTA.Application;
+using LTA.Domain.Common;
 using LTA.Infrastructure;
 using LTA.Infrastructure.Data;
 using LTA.Infrastructure.Services;
@@ -8,15 +9,23 @@ using Polly.Contrib.WaitAndRetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddInfrastructureServices();
+builder.Configuration.AddEnvironmentVariables();
+
+builder.Services.Configure<ApplicationSettings>(
+    builder.Configuration.GetSection(nameof(ApplicationSettings)));
+
+var config = builder.Configuration.GetSection(nameof(ApplicationSettings))
+    .Get<ApplicationSettings>();
+
+builder.Services.AddInfrastructureServices(config);
 builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers(options =>
 {
-    options.CacheProfiles.Add("Default5",
+    options.CacheProfiles.Add("Default",
         new CacheProfile
         {
-            Duration = 5
+            Duration = config.DefaultCacheDuration
         });
 });
 
@@ -26,9 +35,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient(JsonPlaceholderApiClient.ClientName,
-        client => { client.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/"); })
+        client => { client.BaseAddress = new Uri(config.JsonPlaceholderApiUrl); })
     .AddTransientHttpErrorPolicy(policyBuilder =>
-        policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5)));
+        policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
+            TimeSpan.FromSeconds(config.JsonPlaceholderApiDelayInSec),
+            config.JsonPlaceholderApiNumRetry)));
 
 var app = builder.Build();
 

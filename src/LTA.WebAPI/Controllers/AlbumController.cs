@@ -22,7 +22,7 @@ public class AlbumController : ApiControllerBase
     }
 
     [HttpGet("{albumId:int}")]
-    [ResponseCache(CacheProfileName = "Default5")]
+    [ResponseCache(CacheProfileName = "Default")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlbumDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

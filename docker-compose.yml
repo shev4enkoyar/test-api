@@ -3,10 +3,10 @@
     container_name: loginet-web-api
     image: lta.webapi
     environment:
-      POSTGRES_CONTAINER_NAME: "postgres-database"
-      POSTGRES_DB: "test_database"
-      POSTGRES_USER: "admin"
-      POSTGRES_PASSWORD: "admin"
+      ApplicationSettings__DatabaseAddress: "postgres-database"
+      ApplicationSettings__DatabaseName: "test_database"
+      ApplicationSettings__DatabaseUser: "admin"
+      ApplicationSettings__DatabasePassword: "admin"
     depends_on:
       - postgres
     build:

@@ -1,4 +1,5 @@
 ﻿using LTA.Application.Common.Interfaces;
+using LTA.Domain.Common;
 using LTA.Infrastructure.Data;
 using LTA.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -8,23 +9,34 @@ namespace LTA.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+        ApplicationSettings applicationSettings)
     {
-        var databaseContainerName = Environment.GetEnvironmentVariable("POSTGRES_CONTAINER_NAME");
-        var databaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
-        var databaseUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
-        var databasePassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-
         services.AddSingleton(typeof(ILoggerAdapter<>), typeof(LoggerAdapter<>));
 
         services.AddSingleton<IJsonPlaceholderApiClient, JsonPlaceholderApiClient>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql($"Host={databaseContainerName};" +
-                              $"Database={databaseName};" +
-                              $"User Id={databaseUser};" +
-                              $"Password={databasePassword}");
+            if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+            {
+                options.UseNpgsql($"Host={applicationSettings.DatabaseAddress};" +
+                                  $"Database={applicationSettings.DatabaseName};" +
+                                  $"User Id={applicationSettings.DatabaseUser};" +
+                                  $"Password={applicationSettings.DatabasePassword};" +
+                                  $"Port={applicationSettings.DatabasePort}");
+            }
+            else
+            {
+                options.UseNpgsql(
+                    $"User ID={applicationSettings.DatabaseUser};" +
+                    $"Password={applicationSettings.DatabasePassword};" +
+                    $"Server={applicationSettings.DatabaseAddress};" +
+                    $"Port={applicationSettings.DatabasePort};" +
+                    $"Database={applicationSettings.DatabaseName};" +
+                    "Integrated Security=true;" +
+                    "Pooling=true;");
+            }
         });
 
         services.AddTransient<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
