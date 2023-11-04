@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace LTA.WebAPI.Controllers;
 
 [Route("/api/albums")]
-[ResponseCache(CacheProfileName = "Default5")]
 public class AlbumController : ApiControllerBase
 {
     [HttpGet]
@@ -23,6 +22,7 @@ public class AlbumController : ApiControllerBase
     }
 
     [HttpGet("{albumId:int}")]
+    [ResponseCache(CacheProfileName = "Default5")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlbumDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
