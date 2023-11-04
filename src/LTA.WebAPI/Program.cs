@@ -1,22 +1,46 @@
+using LTA.Application;
+using LTA.Infrastructure;
+using LTA.Infrastructure.Services;
+using Microsoft.AspNetCore.Mvc;
+using Polly;
+using Polly.Contrib.WaitAndRetry;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddInfrastructureServices();
+builder.Services.AddApplicationServices();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers(options =>
+{
+    options.CacheProfiles.Add("Default5",
+        new CacheProfile
+        {
+            Duration = 5
+        });
+});
+
+builder.Services.AddResponseCaching();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient(JsonPlaceholderApiClient.ClientName,
+        client => { client.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/"); })
+    .AddTransientHttpErrorPolicy(policyBuilder =>
+        policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5)));
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+// if (app.Environment.IsDevelopment())
+// {
+//     
+// }
 
 app.UseHttpsRedirection();
+
+app.UseResponseCaching();
 
 app.UseAuthorization();
 
