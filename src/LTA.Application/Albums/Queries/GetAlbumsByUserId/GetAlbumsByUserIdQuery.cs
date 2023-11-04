@@ -2,6 +2,7 @@ using AutoMapper;
 using LTA.Application.Common.Attributes;
 using LTA.Application.Common.Exceptions;
 using LTA.Application.Common.Interfaces;
+using LTA.Application.Users.Queries.GetUserById;
 using LTA.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,9 @@ public class GetAlbumsByUserIdQueryHandler : IRequestHandler<GetAlbumsByUserIdQu
         var apiAlbums = await _apiClient.GetAlbumsByUserId(request.UserId);
         if (apiAlbums == null || !apiAlbums.Any())
             throw new NotFoundException();
+        
+        if (!await _dbContext.Users.AnyAsync(x => x.Id.Equals(request.UserId), cancellationToken))
+            _ = new GetUserByIdQuery(request.UserId);
 
         albums = _mapper.Map<List<Album>>(apiAlbums);
         await _dbContext.Albums.AddRangeAsync(albums, cancellationToken);
